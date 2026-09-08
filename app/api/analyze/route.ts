@@ -48,7 +48,19 @@ export async function POST(req: Request) {
 
     return Response.json(output)
   } catch (err) {
-    console.log('[v0] analyze error:', err instanceof Error ? err.message : err)
+    const message = err instanceof Error ? err.message : String(err)
+    console.log('[v0] analyze error:', message)
+
+    if (/credit card|billing|payment method/i.test(message)) {
+      return Response.json(
+        {
+          error:
+            'AI Gateway needs a credit card on file to serve requests (this unlocks free credits — you will not be charged for normal usage). Add one at vercel.com → your team → AI, then try again.',
+        },
+        { status: 402 },
+      )
+    }
+
     return Response.json({ error: 'Failed to analyze the prompt. Please try again.' }, { status: 500 })
   }
 }
